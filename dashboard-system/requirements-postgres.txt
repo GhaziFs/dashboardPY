@@ -1,0 +1,4 @@
+# ثبّت هذا الملف بس وقت النشر الفعلي على قاعدة PostgreSQL (مثلاً عند النشر على Render)
+# ما يحتاجه التشغيل المحلي بقاعدة SQLite
+-r requirements.txt
+psycopg2-binary>=2.9

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام لوحة التحكم الذكية</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+  if (typeof Chart === "undefined") {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>');
+  }
+</script>
+</head>
+<body>
+
+  <button id="theme-toggle" class="theme-toggle" title="تبديل الوضع الليلي">🌙</button>
+
+  <!-- تسجيل الدخول -->
+  <div id="login-screen" class="login-screen">
+    <form id="login-form" class="login-box">
+      <h1>نظام لوحة التحكم</h1>
+      <p class="subtitle">سجّل الدخول للمتابعة</p>
+      <input type="text" id="username" placeholder="اسم المستخدم" required>
+      <input type="password" id="password" placeholder="كلمة المرور" required>
+      <button type="submit">تسجيل الدخول</button>
+      <p id="login-error" class="error-msg"></p>
+      <p class="switch-link">ما عندك حساب؟ <a id="go-register" href="#">سجّل حساب جديد</a></p>
+    </form>
+  </div>
+
+  <!-- تسجيل حساب جديد -->
+  <div id="register-screen" class="login-screen hidden">
+    <form id="register-form" class="login-box">
+      <h1>حساب جديد</h1>
+      <p class="subtitle">تُفعَّل صلاحياتك من قِبل مدير النظام بعد التسجيل</p>
+      <input type="text" id="reg-username" placeholder="اسم المستخدم" required>
+      <input type="email" id="reg-email" placeholder="البريد الإلكتروني" required>
+      <input type="text" id="reg-national-id" placeholder="رقم الهوية (اختياري)">
+      <input type="text" id="reg-full-name" placeholder="الاسم الكامل" required>
+      <input type="password" id="reg-password" placeholder="كلمة المرور" required>
+      <select id="reg-department" class="dept-select">
+        <option value="">القسم الذي تعمل فيه (اختياري)</option>
+        <option value="courses">التعليم التفاعلي</option>
+        <option value="qna">السؤال والجواب</option>
+        <option value="projects">المشاريع</option>
+        <option value="communities">المجتمعات الافتراضية</option>
+        <option value="news">الأخبار والبيانات</option>
+        <option value="rabita">موقع الرابطة</option>
+        <option value="sheikh">موقع معالي الأمين العام</option>
+        <option value="admin_metrics">الإدارة</option>
+      </select>
+      <button type="submit">إنشاء الحساب</button>
+      <p id="register-error" class="error-msg"></p>
+      <p class="switch-link">عندك حساب؟ <a id="go-login" href="#">سجّل الدخول</a></p>
+    </form>
+  </div>
+
+  <!-- رمز التحقق -->
+  <div id="otp-screen" class="login-screen hidden">
+    <form id="otp-form" class="login-box">
+      <h1>رمز التحقق</h1>
+      <p class="subtitle">أدخل الرمز اللي وصلك على بريدك الإلكتروني</p>
+      <input type="text" id="otp-code" placeholder="رمز من 6 أرقام" maxlength="6" required>
+      <button type="submit">تأكيد</button>
+      <p id="otp-error" class="error-msg"></p>
+    </form>
+  </div>
+
+  <!-- تعليمات الاستخدام (تظهر بعد أول تسجيل حساب) -->
+  <div id="onboarding-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h2>مرحبًا بك 👋</h2>
+      <p class="subtitle">خطوات سريعة قبل ما تبدأ:</p>
+      <ol class="onboarding-list">
+        <li>حسابك حاليًا بانتظار تفعيل مدير النظام — بعد التفعيل تقدر تعدّل بيانات قسمك.</li>
+        <li>من القائمة الجانبية، اختر أي قسم لعرض بياناته.</li>
+        <li>فوق كل جدول تقدر تبدّل بين "عرض الجدول" و"عرض رسومي".</li>
+        <li>خانة البحث تفلتر الجدول المفتوح فورًا.</li>
+        <li>لو عندك صلاحية تعديل بقسمك، بتشوف أزرار "+ إضافة"، "تعديل" و"حذف".</li>
+        <li>زر "اعتماد" يظهر لمحللي البيانات لتأكيد صحة السجل.</li>
+      </ol>
+      <button id="onboarding-close" class="add-btn">فهمت، ابدأ</button>
+    </div>
+  </div>
+
+  <!-- لوحة التحكم -->
+  <div id="dashboard" class="dashboard hidden">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="avatar">ف</div>
+        <div>
+          <p id="user-name" class="user-name">—</p>
+          <p id="user-role" class="user-role">—</p>
+        </div>
+      </div>
+      <nav id="nav-list"></nav>
+      <button id="export-btn" class="export-btn">⬇ تصدير Excel</button>
+      <button id="logout-btn" class="logout-btn">تسجيل الخروج</button>
+    </aside>
+
+    <main class="content">
+      <div class="content-header">
+        <div>
+          <h1 id="screen-title"></h1>
+          <p id="screen-subtitle" class="subtitle"></p>
+        </div>
+        <div class="view-toggle">
+          <input id="search-box" type="text" class="search-input" placeholder="🔍 ابحث بهذا الجدول...">
+          <button id="toggle-visual" class="toggle-btn">عرض رسومي</button>
+          <button id="toggle-table" class="toggle-btn active">عرض الجدول</button>
+        </div>
+      </div>
+      <div id="date-filter-row" class="date-filter-row hidden">
+        <label>فلتر بالتاريخ: <input type="text" id="filter-date-text" placeholder="مثلاً: يناير، 2026، ديسمبر"></label>
+        <button id="filter-clear-btn" class="icon-btn">مسح الفلتر</button>
+      </div>
+      <div id="form-container" class="hidden"></div>
+      <div id="screen-body"></div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
